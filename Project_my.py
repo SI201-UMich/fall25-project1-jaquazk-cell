@@ -61,3 +61,29 @@ def calculate_profitability_per_category(data):
             profitability[category] = 0
     return profitability
 
+def write_results_to_file(total_profit, revenue_dict, profitability_dict, output_filename):
+    """
+    Writes the analysis results to a text file.
+    """
+    with open(output_filename, mode='w', encoding='utf-8') as file:
+        file.write(f"Total Profit: ${total_profit:.2f}\n\n")
+
+        file.write("Revenue by Category:\n")
+        for category, revenue in revenue_dict.items():
+            file.write(f"{category}: ${revenue:.2f}\n")
+        file.write("\n")
+
+        file.write("Profitability by Category (Profit / Sales Ratio):\n")
+        for category, ratio in profitability_dict.items():
+            file.write(f"{category}: {ratio:.2%}\n")
+def main():
+    data = read_csv_to_dicts('your_dataset.csv')  # Replace with your actual CSV file path
+
+    total_profit = calculate_total_profit(data)
+    revenue_dict = revenue_per_category(data)
+    profitability_dict = calculate_profitability_per_category(data)
+
+    write_results_to_file(total_profit, revenue_dict, profitability_dict, 'analysis_results.txt')
+
+if __name__ == "__main__":
+    main()
