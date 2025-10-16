@@ -7,83 +7,66 @@ Collaborators: None
 
 import csv
 
-def read_csv_to_dicts(file_name):
-    """
-    Reads the CSV file and returns a list of dictionaries,
-    where each dictionary represents a row with column headers as keys.
-    """
-    with open(file_name, mode='r', newline='', encoding='utf-8') as file:
-        reader = csv.DictReader(file)
-        data = list(reader)
+#Function to read the CSV file and return a list of dictionaries
+def read_csv(file_name):
+    with open(file_name, mode='r') as csvfile:
+        reader = csv.DictReader(csvfile)
+        data = [row for row in reader]
     return data
 
-def calculate_total_profit(data):
-    """
-    Calculates total profit from the dataset.
-    """
-    total_profit = 0
-    for row in data:
-        profit = float(row['Profit'])
-        total_profit += profit
-    return total_profit
+# Calclulate total profit by summing up the 'Profit' column
+def total_profit(data):
+    return sum(float(row['Profit']) for row in data)
 
-def revenue_per_category(data):
-    """
-    Calculates total revenue (Sales) for each product Category.
-    Returns a dictionary with categories as keys and total sales as values.
-    """
-    revenue_dict = {}
-    for row in data:
-        category = row['Category']
-        sales = float(row['Sales'])
-        revenue_dict[category] = revenue_dict.get(category, 0) + sales
-    return revenue_dict
-
-def calculate_profitability_per_category(data):
-    """
-    Calculates profitability by category as total profit divided by total sales.
-    Returns a dictionary with categories as keys and profitability ratio as values.
-    """
-    profit_dict = {}
-    sales_dict = {}
+# Aggregate total profit by product category and return sored list by profit descending
+def profit_by_category(data):
+    Profit_sum = {}
     for row in data:
         category = row['Category']
         profit = float(row['Profit'])
-        sales = float(row['Sales'])
-        profit_dict[category] = profit_dict.get(category, 0) + profit
-        sales_dict[category] = sales_dict.get(category, 0) + sales
-
-    profitability = {}
-    for category in profit_dict:
-        if sales_dict[category] != 0:
-            profitability[category] = profit_dict[category] / sales_dict[category]
+        if category in Profit_sum:
+            Profit_sum[category] += profit
         else:
-            profitability[category] = 0
-    return profitability
+            Profit_sum[category] = profit
+    # Sort categories by profit in descending order
+    sorted_profit = sorted(Profit_sum.items(), key=lambda x: x[1], reverse=True)
+    return sorted_profit
 
-def write_results_to_file(total_profit, revenue_dict, profitability_dict, output_filename):
-    """
-    Writes the analysis results to a text file.
-    """
-    with open(output_filename, mode='w', encoding='utf-8') as file:
-        file.write(f"Total Profit: ${total_profit:.2f}\n\n")
+# Calculate average profit per product category
+def average_profit_per_product(data):
+    profit_sum = {}
+    count = {}
+    for row in data:
+        category = row['Category']
+        profit = float(row['Profit'])
+        profit_sum[category] = profit_sum.get(category, 0) + profit
+        count[category] = count.get(category, 0) + 1
 
-        file.write("Revenue by Category:\n")
-        for category, revenue in revenue_dict.items():
-            file.write(f"{category}: ${revenue:.2f}\n")
-        file.write("\n")
+    #calculate average profit per category
+    avg_profit = {category: profit_sum[category] / count[category] for category in profit_sum}
+    return avg_profit
 
-        file.write("Profitability by Category (Profit / Sales Ratio):\n")
-        for category, ratio in profitability_dict.items():
-            file.write(f"{category}: {ratio:.2%}\n")
+# Main function to execute the analysis
 def main():
-    data = read_csv_to_dicts('your_dataset.csv')  # Replace with your actual CSV file path
+    #read data from CSV file
+    data = read_csv('SampleSuperstore.csv')
 
-    total_profit = calculate_total_profit(data)
-    revenue_dict = revenue_per_category(data)
-    profitability_dict = calculate_profitability_per_category(data)
+    # Calculate and print total profit
+    total = total_profit(data)
+    print(f"Total Profit: ${total:.2f}")
 
-    write_results_to_file(total_profit, revenue_dict, profitability_dict, 'analysis_results.txt')
+    # Calculate profit by category and print sorted results
+    profit_category = profit_by_category(data)
+    print("Profit by Category (most to least):")
+    for category, profit in profit_category:
+        print(f"  {category}: ${profit:.2f}")
 
+    # Calculate average profit per product category and print results
+    avg_profit = average_profit_per_product(data)
+    print("Average Profit per Product Category:")
+    for category, avg in avg_profit.items():
+        print(f"  {category}: ${avg:.2f}")
+
+# run main function if this script is executed
 if __name__ == "__main__":
     main()
